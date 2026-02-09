@@ -4,9 +4,10 @@ User-facing setup guide for running `power-fixer-server` and `power-fixer` toget
 
 ## What you will run
 
-- `power-fixer-server` (local backend)
-- `power-fixer` (local TUI client)
-- Remote ambient agents launched by the server
+Power Fixer includes both a server and a client component you will need to clone:
+
+- [`power-fixer-server`](https://github.com/warpdotdev/power-fixer-server) (local backend)
+- [`power-fixer`](https://github.com/warpdotdev/power-fixer) (local TUI client)
 
 ## Prerequisites
 
@@ -17,67 +18,51 @@ User-facing setup guide for running `power-fixer-server` and `power-fixer` toget
 
 ## Required credentials
 
-- `GITHUB_TOKEN` (for `power-fixer`)
-- `WARP_API_KEY` (for `power-fixer-server`)
-- `POWERFIXER_ENVIRONMENT_ID` (remote runtime environment)
+- `GITHUB_TOKEN` for `power-fixer` to pull issues from GitHub
+- `WARP_API_KEY` for `power-fixer-server` to connect to the Oz agent platform
+- `POWERFIXER_ENVIRONMENT_ID` to run coding agents instead of a configure environment. See the Environment Setup section below to configure this for your repository
 
 Optional:
 - `POWERFIXER_AGENT_PROFILE_ID`
 - `POWERFIXER_DEDUPE_ENVIRONMENT_ID`
 - Slack/OpenAI keys
 
-## Important runtime dependency
+## Environment Setup
 
-Include this repository in your ambient runtime environment:
+You will need to create an Oz cloud environment for coding agents to access your GitHub repository.
 
-- `warpdotdev/power-fixer-status-update`
+When configuring your environment, be sure to include this repository alongside your own codebase: [`warpdotdev/power-fixer-status-update`](https://github.com/warpdotdev/power-fixer-status-update). This includes a runtime script for your cloud agents to report status updates back to Power Fixer as they work.
 
-Reason: prompt templates reference:
+[See our documentation](https://docs.warp.dev/agent-platform/cloud-agents/environments) for more on cloud environments.
 
-- `/workspace/power-fixer-status-update/powerfixer_status.py`
+## Run Power Fixer locally
 
-## 1) Start `power-fixer-server`
+### 1) Start `power-fixer-server`
 
 ```bash
 cd /path/to/power-fixer-server
 cp .env.example .env
 ```
 
-Set minimum `.env` values:
+And set the minimum `.env` values:
 
 ```env
 DATABASE_URL=postgres://postgres@localhost/powerfixer
 WARP_API_KEY=...
 POWERFIXER_ENVIRONMENT_ID=...
 POWERFIXER_CALLBACK_PORT=3001
-POWERFIXER_DEFAULT_GITHUB_ORG=bholmesdev
-POWERFIXER_DEFAULT_PROJECT=simplestack-store
+POWERFIXER_DEFAULT_GITHUB_ORG=YOUR_ORG
+POWERFIXER_DEFAULT_PROJECT=YOUR_REPO
 RUST_LOG=info
 ```
 
-For remote agents, set a public callback URL (not localhost):
+Then, you'll need to include a "callback URL" for the server to report updates back to your client application. For local development, we suggest creating an [ngrok server](https://ngrok.com/) to expose your local server as a public URL for cloud agents to access.
 
 ```env
 POWERFIXER_CALLBACK_URL=https://<your-ngrok-domain>.ngrok-free.dev
 ```
 
-Create DB (first time only):
-
-```bash
-createdb powerfixer
-```
-
-Start server:
-
-```bash
-./script/server
-```
-
-Optional health check:
-
-```bash
-curl http://localhost:3001/health
-```
+Then, stand up the database and start the server by running `./script/server`.
 
 ## 2) Start `power-fixer` client
 
@@ -86,41 +71,17 @@ cd /path/to/power-fixer
 cp .env.example .env
 ```
 
-Set minimum `.env` values:
+And set the minimum `.env` values:
 
 ```env
 GITHUB_TOKEN=ghp_...
-POWERFIXER_DEFAULT_REPO=bholmesdev/simplestack-store
+POWERFIXER_DEFAULT_REPO=YOUR_ORG/YOUR_REPO
 POWERFIXER_SERVER_URL=http://localhost:3001
-POWERFIXER_LOCAL_AGENT_BIN=oz
 ```
 
-Start client:
+Then, start the client connected to your local server using the `--local` flag:
 
 ```bash
 ./script/run --local
 ```
 
-## 3) Use dedupe with remote agents
-
-When a dedupe agent runs remotely, callback status must go to:
-
-- `POST ${POWERFIXER_CALLBACK_URL}/api/v1/agent/status`
-- Header: `Authorization: Bearer ${POWERFIXER_CALLBACK_TOKEN}`
-
-Example callback:
-
-```bash
-curl -X POST "${POWERFIXER_CALLBACK_URL}/api/v1/agent/status" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${POWERFIXER_CALLBACK_TOKEN}" \
-  -d '{"state":"IN_PROGRESS","summary":"Started dedupe"}'
-```
-
-## Quick verification checklist
-
-- [ ] Server starts and `/health` is reachable
-- [ ] Client loads issues from `bholmesdev/simplestack-store`
-- [ ] Dedupe agent launches
-- [ ] Remote callback reaches `/api/v1/agent/status`
-- [ ] Dedupe results appear in the client review flow
