@@ -2,6 +2,8 @@
 
 Setup guide for running the fullstack Power Fixer application.
 
+![Power Fixer Client](assets/power-fixer-client.png)
+
 ## What is Power Fixer?
 
 Power Fixer is a GitHub issue triage toolkit made of two components:
