@@ -19,7 +19,7 @@ Power Fixer includes both a server and a client component you will need to clone
 ## Required credentials
 
 - `GITHUB_TOKEN` for `power-fixer` to pull issues from GitHub
-- `WARP_API_KEY` for `power-fixer-server` to connect to the Oz agent platform
+- `WARP_API_KEY` for `power-fixer-server` to connect to the Oz platform. See our [API key docs](https://docs.warp.dev/reference/cli/cli#generating-api-keys) to learn how to generate this.
 - `POWERFIXER_ENVIRONMENT_ID` to run coding agents instead of a configure environment. See the Environment Setup section below to configure this for your repository
 
 Optional:
@@ -29,7 +29,7 @@ Optional:
 
 ## Environment Setup
 
-You will need to create an Oz cloud environment for coding agents to access your GitHub repository.
+You will need to create an [Oz cloud environment](https://docs.warp.dev/agent-platform/cloud-agents/environments) for coding agents to access your GitHub repository.
 
 When configuring your environment, be sure to include this repository alongside your own codebase: [`warpdotdev/power-fixer-status-update`](https://github.com/warpdotdev/power-fixer-status-update). This includes a runtime script for your cloud agents to report status updates back to Power Fixer as they work.
 
@@ -44,7 +44,7 @@ cd /path/to/power-fixer-server
 cp .env.example .env
 ```
 
-And set the minimum `.env` values:
+And set the minimum `.env` values. See [our API key docs](https://docs.warp.dev/reference/cli/cli#generating-api-keys) to learn how to generate a Warp API key to use the Oz platform.
 
 ```env
 DATABASE_URL=postgres://postgres@localhost/powerfixer
