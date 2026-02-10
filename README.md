@@ -1,6 +1,6 @@
 # Power Fixer Setup Guide
 
-User-facing setup guide for running `power-fixer-server` and `power-fixer` together with remote agent callbacks.
+Setup guide for running the fullstack Power Fixer application.
 
 ## What is Power Fixer?
 
